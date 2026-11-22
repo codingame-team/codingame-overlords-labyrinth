@@ -1,0 +1,41 @@
+read width:int height:int leagueLevel:int
+read mySanctumX:int mySanctumY:int oppSanctumX:int oppSanctumY:int
+gameloop
+read gems:int mySanctumHp:int oppSanctumHp:int
+loop height read row:word(16)
+read pentagramCount:int
+loop pentagramCount read pentagramId:int px:int py:int owner:int
+read minionCount:int
+loop minionCount read minionId:int minionOwner:int type:word(10) x:int y:int hp:int
+write join("SUMMON", "0", "HOUND")
+
+STATEMENT
+Channel Werdna's dark magic! Spend your Energy Gems each turn to summon Hounds, Guards, and Wraiths on controlled Pentagrams and activate your legions to crush the rival Overlord's Sanctum.
+
+INPUT
+width: Width of the labyrinth (11)
+height: Height of the labyrinth (11)
+leagueLevel: Current league level (1=Wood 2, 2=Wood 1, 3=Bronze+)
+mySanctumX: X coordinate of your Overlord Sanctum
+mySanctumY: Y coordinate of your Overlord Sanctum
+oppSanctumX: X coordinate of opponent Sanctum
+oppSanctumY: Y coordinate of opponent Sanctum
+gems: Energy Gems available to spend this turn
+mySanctumHp: Remaining HP of your Sanctum
+oppSanctumHp: Remaining HP of opponent Sanctum
+row: One row of the labyrinth ('.'=floor, '#'=wall)
+pentagramCount: Number of Summoning Pentagrams
+pentagramId: Unique ID of the Pentagram
+px: X coordinate of the Pentagram
+py: Y coordinate of the Pentagram
+owner: -1=neutral, 0=yours, 1=opponent
+minionCount: Total number of active minions
+minionId: Unique ID of the minion
+minionOwner: 0=yours (listed first), 1=opponent
+type: Minion class (HOUND, GUARD, WRAITH)
+x: X coordinate of the minion
+y: Y coordinate of the minion
+hp: Remaining HP of the minion
+
+OUTPUT
+A single line of semicolon-separated commands: SUMMON <pentagramId> <HOUND|GUARD|WRAITH> ; ACTIVATE <minionId> <targetX> <targetY>
