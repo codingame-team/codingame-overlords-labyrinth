@@ -1,6 +1,6 @@
 # Overlord's Labyrinth — CodinGame Multiplayer RPG SDK Project
 
-Un puzzle multijoueur RPG tactique inspiré de **Wizardry IV: The Return of Werdna** (invocation sur pentagrammes) et **Conan Overlord** (allocation de gemmes d'énergie entre invocation et double activation), avec bascule dynamique PixiJS entre **Mode Sprites RPG 2D** et **Mode Formes Géométriques Debug** (`ToggleModule`).
+Un puzzle multijoueur RPG tactique inspiré de **Wizardry IV: The Return of Nerdna** (invocation sur pentagrammes) et **Conan Overlord** (allocation de gemmes d'énergie entre invocation et double activation), avec bascule dynamique PixiJS entre **Mode Sprites RPG 2D** et **Mode Formes Géométriques Debug** (`ToggleModule`).
 
 ## Commandes Rapides
 * **Viewer Web Local (`http://localhost:8888/test.html`)** :

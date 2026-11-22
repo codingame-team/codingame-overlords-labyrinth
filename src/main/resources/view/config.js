@@ -11,7 +11,7 @@ export const modules = [
 ];
 
 export const playerColors = [
-    '#ff1d5c', // Player 0: Werdna's Cult
+    '#ff1d5c', // Player 0: Nerdna's Cult
     '#22a1e4'  // Player 1: Trebor's Order
 ];
 

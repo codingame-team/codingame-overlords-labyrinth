@@ -10,7 +10,7 @@ loop minionCount read minionId:int minionOwner:int type:word(10) x:int y:int hp:
 write join("SUMMON", "0", "HOUND")
 
 STATEMENT
-Channel Werdna's dark magic! Spend your Energy Gems each turn to summon Hounds, Guards, and Wraiths on controlled Pentagrams and activate your legions to crush the rival Overlord's Sanctum.
+Channel Nerdna's dark magic! Spend your Energy Gems each turn to summon Hounds, Guards, and Wraiths on controlled Pentagrams and activate your legions to crush the rival Overlord's Sanctum.
 
 INPUT
 width: Width of the labyrinth (11)
