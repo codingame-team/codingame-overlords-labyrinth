@@ -29,18 +29,50 @@ class Player {
             }
 
             List<String> cmds = new ArrayList<>();
-            for (int[] p : pentagrams) {
-                if (p[3] == 0 && gems >= 3) {
-                    cmds.add("SUMMON " + p[0] + " GUARD");
-                    gems -= 3;
-                    break;
-                }
-            }
-            for (String[] m : myMinions) {
+
+            // 1. Activate existing minions first to clear home pentagram & advance!
+            for (int i = 0; i < myMinions.size(); i++) {
                 if (gems < 1) break;
-                cmds.add("ACTIVATE " + m[0] + " " + (width / 2) + " " + (height / 2));
+                String[] m = myMinions.get(i);
+                int tx = oppSanctumX, ty = oppSanctumY;
+                if (leagueLevel >= 2 && i == 0) {
+                    for (int[] p : pentagrams) {
+                        if (p[3] != 0) {
+                            tx = p[1];
+                            ty = p[2];
+                            break;
+                        }
+                    }
+                }
+                cmds.add("ACTIVATE " + m[0] + " " + tx + " " + ty);
                 gems -= 1;
             }
+
+            // 2. Summon on closest-to-enemy controlled pentagram
+            pentagrams.sort(Comparator.comparingInt(p -> Math.abs(p[1] - oppSanctumX) + Math.abs(p[2] - oppSanctumY)));
+            for (int[] p : pentagrams) {
+                if (p[3] != 0) continue;
+                if (leagueLevel >= 3 && gems >= 4) {
+                    cmds.add("SUMMON " + p[0] + " WRAITH");
+                    gems -= 4;
+                } else if (leagueLevel >= 2 && gems >= 3) {
+                    cmds.add("SUMMON " + p[0] + " GUARD");
+                    gems -= 3;
+                } else if (gems >= 2) {
+                    cmds.add("SUMMON " + p[0] + " HOUND");
+                    gems -= 2;
+                }
+            }
+
+            // 3. Frenzy double-activation in League 3
+            if (leagueLevel >= 3) {
+                for (String[] m : myMinions) {
+                    if (gems < 2) break;
+                    cmds.add("ACTIVATE " + m[0] + " " + oppSanctumX + " " + oppSanctumY);
+                    gems -= 2;
+                }
+            }
+
             System.out.println(cmds.isEmpty() ? "WAIT" : String.join(" ; ", cmds));
         }
     }

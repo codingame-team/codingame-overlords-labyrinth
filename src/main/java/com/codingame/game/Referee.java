@@ -137,45 +137,75 @@ public class Referee extends AbstractReferee {
     }
 
     private void generateLabyrinth(Random rng) {
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) grid[y][x] = '.';
+        int mid = WIDTH / 2;
+        for (int attempt = 0; attempt < 40; attempt++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                for (int x = 0; x < WIDTH; x++) grid[y][x] = '.';
+            }
+            for (int y = 0; y < HEIGHT; y++) {
+                for (int x = 0; x <= mid; x++) {
+                    if (x == mid && y > HEIGHT / 2) continue;
+                    if (rng.nextDouble() < 0.22) {
+                        grid[y][x] = '#';
+                        grid[HEIGHT - 1 - y][WIDTH - 1 - x] = '#';
+                    }
+                }
+            }
+            // Keep Sanctums and initial guard spawns open
+            grid[5][1] = '.'; grid[5][2] = '.';
+            grid[5][WIDTH - 2] = '.'; grid[5][WIDTH - 3] = '.';
+            grid[mid][mid] = '.';
+
+            int sideX = 3 + rng.nextInt(3); // 3..5
+            int sideY = 1 + rng.nextInt(3); // 1..3
+
+            pentagrams.clear();
+            int[][] pCoords = {
+                {1, 5, 0},
+                {WIDTH - 2, 5, 1},
+                {mid, mid, -1},
+                {sideX, sideY, -1},
+                {WIDTH - 1 - sideX, HEIGHT - 1 - sideY, -1}
+            };
+            for (int i = 0; i < pCoords.length; i++) {
+                Pentagram p = new Pentagram();
+                p.id = i;
+                p.x = pCoords[i][0];
+                p.y = pCoords[i][1];
+                p.owner = pCoords[i][2];
+                grid[p.y][p.x] = '.';
+                pentagrams.add(p);
+            }
+
+            if (isLabyrinthConnected()) {
+                return;
+            }
         }
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x <= WIDTH / 2; x++) {
-                if (x == WIDTH / 2 && y > HEIGHT / 2) continue;
-                if (rng.nextDouble() < 0.16) {
-                    grid[y][x] = '#';
-                    grid[HEIGHT - 1 - y][WIDTH - 1 - x] = '#';
+        for (int i = 1; i < WIDTH - 1; i++) {
+            grid[mid][i] = '.';
+            grid[i][mid] = '.';
+        }
+    }
+
+    private boolean isLabyrinthConnected() {
+        boolean[][] vis = new boolean[HEIGHT][WIDTH];
+        Queue<int[]> q = new ArrayDeque<>();
+        vis[5][1] = true;
+        q.add(new int[]{1, 5});
+        while (!q.isEmpty()) {
+            int[] c = q.poll();
+            for (int d = 0; d < 4; d++) {
+                int nx = c[0] + DX[d], ny = c[1] + DY[d];
+                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && grid[ny][nx] == '.' && !vis[ny][nx]) {
+                    vis[ny][nx] = true;
+                    q.add(new int[]{nx, ny});
                 }
             }
         }
-        int mid = WIDTH / 2;
-        for (int i = 1; i < WIDTH - 1; i++) {
-            grid[mid][i] = '.';
-            grid[2][i] = '.';
-            grid[HEIGHT - 3][i] = '.';
-            grid[i][mid] = '.';
-            grid[i][2] = '.';
-            grid[i][WIDTH - 3] = '.';
+        for (Pentagram p : pentagrams) {
+            if (!vis[p.y][p.x]) return false;
         }
-
-        // 5 Summoning Pentagrams (0=P0 Home, 1=P1 Home, 2=Center, 3 & 4=Top/Bot)
-        int[][] pCoords = {
-            {1, 5, 0},
-            {WIDTH - 2, 5, 1},
-            {mid, mid, -1},
-            {mid, 2, -1},
-            {mid, HEIGHT - 3, -1}
-        };
-        for (int i = 0; i < pCoords.length; i++) {
-            Pentagram p = new Pentagram();
-            p.id = i;
-            p.x = pCoords[i][0];
-            p.y = pCoords[i][1];
-            p.owner = pCoords[i][2];
-            grid[p.y][p.x] = '.';
-            pentagrams.add(p);
-        }
+        return true;
     }
 
     private void initGraphics() {
