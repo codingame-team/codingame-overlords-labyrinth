@@ -1,0 +1,151 @@
+<!-- LEAGUES level1 level2 level3 -->
+<div id="statement_back" class="statement_back" style="display:none"></div>
+<div class="statement-body">
+  <!-- LEAGUE ALERT -->
+  <div style="color: #7cc576; background-color: rgba(124, 197, 118,.1); padding: 20px; margin-bottom: 15px; text-align: left">
+    <!-- BEGIN level1 -->
+    <p style="margin-bottom: 0"><b>Wood 2 League:</b> Spend your Energy Gems to summon <b>HOUND</b> and <b>GUARD</b> minions on controlled Pentagrams and activate them once per turn. Advanced minion classes and frenzy activations unlock in higher leagues.</p>
+    <!-- END -->
+    <!-- BEGIN level2 -->
+    <p style="margin-bottom: 0"><b>Wood 1 League:</b> Ranged spectral <b>WRAITH</b> minions (<const>14</const> HP, <const>7</const> ATK, range <const>2</const>) are now unlocked for summoning!</p>
+    <!-- END -->
+    <!-- BEGIN level3 -->
+    <p style="margin-bottom: 0"><b>Bronze+ League:</b> <b>Frenzy Double-Activation</b> is now unlocked! You may activate the same minion up to <b>2 times per turn</b> (<const>1</const> Gem for the first activation, <const>2</const> Gems for the second).</p>
+    <!-- END -->
+  </div>
+
+  <!-- GOAL -->
+  <div class="statement-section statement-goal">
+    <h1><span class="icon icon-goal">&nbsp;</span><span>The Goal</span></h1>
+    <div class="statement-goal-content">
+      Asymmetric tactical board-game duel inspired by <i>Conan: Book of Skelos (Overlord Dashboard)</i> and <i>Nerdna's Labyrinth</i>. Allocate your <b>Energy Gems</b> each turn between summoning undead legions on <b>Pentagrams</b> and activating minions to destroy the rival Overlord's <b>Sanctum</b>!
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="statement-section statement-rules">
+    <h1><span class="icon icon-rules">&nbsp;</span><span>Rules</span></h1>
+    <div class="statement-rules-content">
+      <p>The battle unfolds on a symmetric <const>11</const>&times;<const>11</const> labyrinth containing walkable floor tiles (<const>.</const>), walls (<const>#</const>), two Overlord Sanctums (<const>40</const> HP each, at (<const>1</const>, <const>5</const>) and (<const>9</const>, <const>5</const>)), and <const>5</const> Summoning Pentagrams.</p>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Energy Gems &amp; Minion Legions</h3>
+      <p>At the start of each turn, each Overlord receives fresh <b>Energy Gems</b> equal to <const>5 + leagueLevel + controlledPentagrams</const> (unspent Gems do not carry over). You can spend Gems on two types of commands:</p>
+      <ul>
+        <li><b><action>SUMMON pentagramId TYPE</action>:</b> Summons a new minion onto an unoccupied Pentagram that you control:
+          <ul>
+            <li><b><const>HOUND</const></b> (Cost <const>2</const> Gems, <const>12</const> HP, <const>4</const> ATK, Speed <const>2</const>, Range <const>1</const>): Fast hunter.</li>
+            <li><b><const>GUARD</const></b> (Cost <const>3</const> Gems, <const>24</const> HP, <const>6</const> ATK, Speed <const>1</const>, Range <const>1</const>): Heavy armored skeleton.</li>
+            <!-- BEGIN level2 level3 -->
+            <li class="statement-new-league-rule"><b><const>WRAITH</const></b> (Cost <const>4</const> Gems, <const>14</const> HP, <const>7</const> ATK, Speed <const>1</const>, Range <const>2</const>): Ranged spectral caster.</li>
+            <!-- END -->
+          </ul>
+        </li>
+        <!-- BEGIN level1 level2 -->
+        <li><b><action>ACTIVATE minionId targetX targetY</action> (Cost <const>1</const> Gem, max <const>1</const> activation/turn per minion):</b> Commands an owned minion to advance up to its <b>Speed</b> orthogonal steps toward (<var>targetX</var>, <var>targetY</var>), capturing Pentagrams stepped on and striking the enemy Sanctum when adjacent (<b>+<const>8</const> points</b>).</li>
+        <!-- END -->
+        <!-- BEGIN level3 -->
+        <li class="statement-new-league-rule"><b><action>ACTIVATE minionId targetX targetY</action> (Frenzy: up to <const>2</const> activations/turn per minion — <const>1</const> Gem for 1st, <const>2</const> Gems for 2nd):</b> Commands an owned minion to advance up to its <b>Speed</b> orthogonal steps toward (<var>targetX</var>, <var>targetY</var>), capturing Pentagrams stepped on and striking the enemy Sanctum when adjacent (<b>+<const>8</const> points</b>).</li>
+        <!-- END -->
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">End-of-Turn Combat &amp; Scoring</h3>
+      <ol>
+        <!-- BEGIN level1 -->
+        <li>After all <action>SUMMON</action> and <action>ACTIVATE</action> commands resolve, every active minion automatically attacks the weakest adjacent enemy minion (Manhattan distance <const>1</const>).</li>
+        <!-- END -->
+        <!-- BEGIN level2 level3 -->
+        <li>After all <action>SUMMON</action> and <action>ACTIVATE</action> commands resolve, every active minion automatically attacks the weakest enemy minion within its Manhattan <b>Range</b> (<const>1</const> for Hound/Guard, <const>2</const> for Wraith).</li>
+        <!-- END -->
+        <li>Each enemy minion slain awards <b>+<const>5</const> points</b> to the killer.</li>
+        <li>At the end of the turn, each player gains <b>+<const>2</const> points</b> per controlled Pentagram.</li>
+        <li>Reducing the enemy Sanctum to <const>0</const> HP immediately ends the match and awards a <b>+<const>50</const> point</b> victory bonus!</li>
+      </ol>
+
+      <div class="statement-victory-conditions">
+        <div class="icon victory"></div>
+        <div class="blk">
+          <div class="title">Victory Conditions</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Destroy the rival Overlord's Sanctum or have a higher score after <const>90</const> turns.</li></ul></div>
+        </div>
+      </div>
+      <div class="statement-lose-conditions">
+        <div class="icon lose"></div>
+        <div class="blk">
+          <div class="title">Defeat Conditions</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Your Sanctum is destroyed or you have a lower score than your opponent after <const>90</const> turns.</li><li>Your program times out or outputs an invalid command.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL -->
+  <div class="statement-section statement-protocol">
+    <h1><span class="icon icon-protocol">&nbsp;</span><span>Game Input</span></h1>
+    <div class="blk">
+      <div class="title">Initialization Input</div>
+      <div class="text">
+        <p><span class="statement-lineno">Line 1:</span> 3 space-separated integers <var>width</var>, <var>height</var> and <var>leagueLevel</var>, the dimensions of the labyrinth (<const>11</const>&times;<const>11</const>) and the current league level (<const>1</const>, <const>2</const> or <const>3</const>).</p>
+        <p><span class="statement-lineno">Line 2:</span> 4 space-separated integers <var>mySanctumX</var>, <var>mySanctumY</var>, <var>oppSanctumX</var> and <var>oppSanctumY</var>, the coordinates of your Overlord Sanctum and your opponent's Sanctum.</p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Input for One Game Turn</div>
+      <div class="text">
+        <p><span class="statement-lineno">Line 1:</span> 3 space-separated integers <var>gems</var>, <var>mySanctumHp</var> and <var>oppSanctumHp</var>, your available Energy Gems for this turn and the remaining HP of both Sanctums.</p>
+        <p><span class="statement-lineno">Next <var>height</var> lines:</span> a string <var>row</var> of length <var>width</var> representing one row of the labyrinth (<const>.</const> for floor, <const>#</const> for wall).</p>
+        <p><span class="statement-lineno">Next line:</span> an integer <var>pentagramCount</var>, the number of Summoning Pentagrams (<const>5</const>).</p>
+        <p><span class="statement-lineno">Next <var>pentagramCount</var> lines:</span> 4 space-separated integers <var>pentagramId</var>, <var>px</var>, <var>py</var> and <var>owner</var> (<const>-1</const> = neutral, <const>0</const> = controlled by you, <const>1</const> = controlled by opponent).</p>
+        <p><span class="statement-lineno">Next line:</span> an integer <var>minionCount</var>, the total number of active minions on the board.</p>
+        <p><span class="statement-lineno">Next <var>minionCount</var> lines:</span> 6 space-separated values <var>minionId</var>, <var>minionOwner</var>, <var>type</var>, <var>x</var>, <var>y</var> and <var>hp</var>:</p>
+        <ul>
+          <li><var>minionId</var>: unique integer ID of the minion.</li>
+          <li><var>minionOwner</var>: <const>0</const> if owned by you (listed first), <const>1</const> if owned by your opponent.</li>
+          <!-- BEGIN level1 -->
+          <li><var>type</var>: minion class string (<const>HOUND</const> or <const>GUARD</const>).</li>
+          <!-- END -->
+          <!-- BEGIN level2 level3 -->
+          <li><var>type</var>: minion class string (<const>HOUND</const>, <const>GUARD</const> or <const>WRAITH</const>).</li>
+          <!-- END -->
+          <li><var>x</var>, <var>y</var>: integer coordinates of the minion.</li>
+          <li><var>hp</var>: current integer HP of the minion.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Output for One Game Turn</div>
+      <div class="text">
+        <p><span class="statement-lineno">A single line</span> containing one or more semicolon-separated (<const>;</const>) commands (or <action>WAIT</action>):</p>
+        <ul>
+          <!-- BEGIN level1 -->
+          <li><action>SUMMON pentagramId TYPE</action> where <var>TYPE</var> is <const>HOUND</const> or <const>GUARD</const>.</li>
+          <!-- END -->
+          <!-- BEGIN level2 level3 -->
+          <li><action>SUMMON pentagramId TYPE</action> where <var>TYPE</var> is <const>HOUND</const>, <const>GUARD</const> or <const>WRAITH</const>.</li>
+          <!-- END -->
+          <li><action>ACTIVATE minionId targetX targetY</action></li>
+        </ul>
+        <p>Example: <action>ACTIVATE 0 9 5 ; SUMMON 0 GUARD</action></p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Constraints</div>
+      <div class="text">
+        <var>width</var> = <const>11</const>, <var>height</var> = <const>11</const><br>
+        <var>pentagramCount</var> = <const>5</const><br>
+        <const>0</const> &le; <var>minionCount</var> &le; <const>24</const><br>
+        Response time for the first turn &le; <const>1000</const> ms<br>
+        Response time per turn &le; <const>50</const> ms<br>
+        Maximum number of turns: <const>90</const>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCE CODE -->
+  <div class="statement-section statement-examples">
+    <h1><span class="icon icon-example">&nbsp;</span><span>Source Code</span></h1>
+    <div class="statement-examples-text">
+      The complete source code of the referee, Dual-Mode PixiJS viewer, and reference bots is available on GitHub:
+      <a href="https://github.com/codingame-team/codingame-overlords-labyrinth" target="_blank" rel="noopener noreferrer">https://github.com/codingame-team/codingame-overlords-labyrinth</a>
+    </div>
+  </div>
+</div>

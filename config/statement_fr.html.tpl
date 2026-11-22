@@ -1,0 +1,151 @@
+<!-- LEAGUES level1 level2 level3 -->
+<div id="statement_back" class="statement_back" style="display:none"></div>
+<div class="statement-body">
+  <!-- LEAGUE ALERT -->
+  <div style="color: #7cc576; background-color: rgba(124, 197, 118,.1); padding: 20px; margin-bottom: 15px; text-align: left">
+    <!-- BEGIN level1 -->
+    <p style="margin-bottom: 0"><b>Ligue Bois 2 :</b> Dépensez vos Gemmes d'Énergie pour invoquer des <b>HOUND</b> et <b>GUARD</b> sur vos Pentagrammes et activez chaque serviteur une fois par tour. De nouvelles classes et capacités seront débloquées dans les ligues supérieures.</p>
+    <!-- END -->
+    <!-- BEGIN level2 -->
+    <p style="margin-bottom: 0"><b>Ligue Bois 1 :</b> Les spectres à distance <b>WRAITH</b> (<const>14</const> PV, <const>7</const> ATQ, portée <const>2</const>) sont désormais débloqués à l'invocation !</p>
+    <!-- END -->
+    <!-- BEGIN level3 -->
+    <p style="margin-bottom: 0"><b>Ligue Bronze+ :</b> La <b>Frénésie (Double-Activation)</b> est débloquée ! Vous pouvez activer un même serviteur jusqu'à <b>2 fois par tour</b> (<const>1</const> Gemme pour la première activation, <const>2</const> Gemmes pour la seconde).</p>
+    <!-- END -->
+  </div>
+
+  <!-- GOAL -->
+  <div class="statement-section statement-goal">
+    <h1><span class="icon icon-goal">&nbsp;</span><span>Objectif</span></h1>
+    <div class="statement-goal-content">
+      Duel tactique inspiré du plateau d'Overlord de <i>Conan: Book of Skelos</i> et du <i>Labyrinthe de Nerdna</i>. Répartissez vos <b>Gemmes d'Énergie</b> à chaque tour entre l'invocation de serviteurs sur les <b>Pentagrammes</b> et l'activation de vos légions pour détruire le <b>Sanctuaire (Sanctum)</b> de l'Overlord rival !
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="statement-section statement-rules">
+    <h1><span class="icon icon-rules">&nbsp;</span><span>Règles</span></h1>
+    <div class="statement-rules-content">
+      <p>La bataille se déroule dans un labyrinthe symétrique <const>11</const>&times;<const>11</const> composé de dalles praticables (<const>.</const>), de murs (<const>#</const>), de deux Sanctuaires d'Overlord (<const>40</const> PV chacun, situés en (<const>1</const>, <const>5</const>) et (<const>9</const>, <const>5</const>)) et de <const>5</const> Pentagrammes d'Invocation.</p>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Gemmes d'Énergie &amp; Légions de Serviteurs</h3>
+      <p>Au début de chaque tour, chaque Overlord reçoit une réserve de <b>Gemmes d'Énergie</b> égale à <const>5 + leagueLevel + pentagrammesContrôlés</const> (les Gemmes non dépensées ne sont pas conservées au tour suivant). Vous pouvez dépenser vos Gemmes via deux types d'ordres :</p>
+      <ul>
+        <li><b><action>SUMMON pentagramId TYPE</action> :</b> Invoque un nouveau serviteur sur un Pentagramme libre que vous contrôlez :
+          <ul>
+            <li><b><const>HOUND</const></b> (Coût <const>2</const> Gemmes, <const>12</const> PV, <const>4</const> ATQ, Vitesse <const>2</const>, Portée <const>1</const>) : Molosse rapide.</li>
+            <li><b><const>GUARD</const></b> (Coût <const>3</const> Gemmes, <const>24</const> PV, <const>6</const> ATQ, Vitesse <const>1</const>, Portée <const>1</const>) : Squelette lourd blindé.</li>
+            <!-- BEGIN level2 level3 -->
+            <li class="statement-new-league-rule"><b><const>WRAITH</const></b> (Coût <const>4</const> Gemmes, <const>14</const> PV, <const>7</const> ATQ, Vitesse <const>1</const>, Portée <const>2</const>) : Spectre attaquant à distance.</li>
+            <!-- END -->
+          </ul>
+        </li>
+        <!-- BEGIN level1 level2 -->
+        <li><b><action>ACTIVATE minionId targetX targetY</action> (Coût <const>1</const> Gemme, max <const>1</const> activation/tour par serviteur) :</b> Fait avancer le serviteur jusqu'à sa <b>Vitesse</b> vers (<var>targetX</var>, <var>targetY</var>), capture les Pentagrammes traversés et frappe le Sanctuaire adverse s'il est adjacent (<b>+<const>8</const> points</b>).</li>
+        <!-- END -->
+        <!-- BEGIN level3 -->
+        <li class="statement-new-league-rule"><b><action>ACTIVATE minionId targetX targetY</action> (Frénésie : jusqu'à <const>2</const> activations/tour par serviteur — <const>1</const> Gemme la 1re, <const>2</const> Gemmes la 2e) :</b> Fait avancer le serviteur jusqu'à sa <b>Vitesse</b> vers (<var>targetX</var>, <var>targetY</var>), capture les Pentagrammes traversés et frappe le Sanctuaire adverse s'il est adjacent (<b>+<const>8</const> points</b>).</li>
+        <!-- END -->
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Combats de Fin de Tour &amp; Score</h3>
+      <ol>
+        <!-- BEGIN level1 -->
+        <li>Une fois toutes les commandes <action>SUMMON</action> et <action>ACTIVATE</action> exécutées, chaque serviteur actif attaque automatiquement le serviteur ennemi adjacent le plus faible (distance de Manhattan <const>1</const>).</li>
+        <!-- END -->
+        <!-- BEGIN level2 level3 -->
+        <li>Une fois toutes les commandes <action>SUMMON</action> et <action>ACTIVATE</action> exécutées, chaque serviteur actif attaque automatiquement le serviteur ennemi le plus faible situé à portée de Manhattan (<const>1</const> pour Hound/Guard, <const>2</const> pour Wraith).</li>
+        <!-- END -->
+        <li>Chaque serviteur ennemi éliminé rapporte <b>+<const>5</const> points</b>.</li>
+        <li>À la fin du tour, chaque joueur gagne <b>+<const>2</const> points</b> par Pentagramme contrôlé.</li>
+        <li>Réduire le Sanctuaire adverse à <const>0</const> PV met fin immédiatement à la partie et octroie un bonus de victoire de <b>+<const>50</const> points</b> !</li>
+      </ol>
+
+      <div class="statement-victory-conditions">
+        <div class="icon victory"></div>
+        <div class="blk">
+          <div class="title">Conditions de Victoire</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Détruire le Sanctuaire de l'Overlord adverse ou avoir un score supérieur au terme des <const>90</const> tours.</li></ul></div>
+        </div>
+      </div>
+      <div class="statement-lose-conditions">
+        <div class="icon lose"></div>
+        <div class="blk">
+          <div class="title">Conditions de Défaite</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Votre Sanctuaire est détruit ou vous avez moins de points que votre adversaire après <const>90</const> tours.</li><li>Votre programme dépasse le temps imparti ou affiche une commande invalide.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL -->
+  <div class="statement-section statement-protocol">
+    <h1><span class="icon icon-protocol">&nbsp;</span><span>Entrées &amp; Sorties du Jeu</span></h1>
+    <div class="blk">
+      <div class="title">Entrées d'Initialisation</div>
+      <div class="text">
+        <p><span class="statement-lineno">Ligne 1 :</span> 3 entiers séparés par des espaces <var>width</var>, <var>height</var> et <var>leagueLevel</var>, les dimensions du labyrinthe (<const>11</const>&times;<const>11</const>) et le niveau de la ligue actuelle (<const>1</const>, <const>2</const> ou <const>3</const>).</p>
+        <p><span class="statement-lineno">Ligne 2 :</span> 4 entiers séparés par des espaces <var>mySanctumX</var>, <var>mySanctumY</var>, <var>oppSanctumX</var> et <var>oppSanctumY</var>, les coordonnées de votre Sanctuaire et de celui de votre adversaire.</p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Entrées pour un Tour de Jeu</div>
+      <div class="text">
+        <p><span class="statement-lineno">Ligne 1 :</span> 3 entiers séparés par des espaces <var>gems</var>, <var>mySanctumHp</var> et <var>oppSanctumHp</var>, vos Gemmes d'Énergie disponibles pour ce tour et les PV restants des deux Sanctuaires.</p>
+        <p><span class="statement-lineno">Les <var>height</var> lignes suivantes :</span> une chaîne de caractères <var>row</var> de longueur <var>width</var> représentant une ligne du labyrinthe (<const>.</const> pour une dalle praticable, <const>#</const> pour un mur).</p>
+        <p><span class="statement-lineno">Ligne suivante :</span> un entier <var>pentagramCount</var>, le nombre de Pentagrammes d'Invocation (<const>5</const>).</p>
+        <p><span class="statement-lineno">Les <var>pentagramCount</var> lignes suivantes :</span> 4 entiers séparés par des espaces <var>pentagramId</var>, <var>px</var>, <var>py</var> et <var>owner</var> (<const>-1</const> = neutre, <const>0</const> = contrôlé par vous, <const>1</const> = contrôlé par l'adversaire).</p>
+        <p><span class="statement-lineno">Ligne suivante :</span> un entier <var>minionCount</var>, le nombre total de serviteurs actifs sur la grille.</p>
+        <p><span class="statement-lineno">Les <var>minionCount</var> lignes suivantes :</span> 6 valeurs séparées par des espaces <var>minionId</var>, <var>minionOwner</var>, <var>type</var>, <var>x</var>, <var>y</var> et <var>hp</var> :</p>
+        <ul>
+          <li><var>minionId</var> : identifiant entier unique du serviteur.</li>
+          <li><var>minionOwner</var> : <const>0</const> s'il vous appartient (listés en premier), <const>1</const> s'il appartient à votre adversaire.</li>
+          <!-- BEGIN level1 -->
+          <li><var>type</var> : chaîne indiquant la classe du serviteur (<const>HOUND</const> ou <const>GUARD</const>).</li>
+          <!-- END -->
+          <!-- BEGIN level2 level3 -->
+          <li><var>type</var> : chaîne indiquant la classe du serviteur (<const>HOUND</const>, <const>GUARD</const> ou <const>WRAITH</const>).</li>
+          <!-- END -->
+          <li><var>x</var>, <var>y</var> : coordonnées entières du serviteur.</li>
+          <li><var>hp</var> : PV actuels du serviteur.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Sortie pour un Tour de Jeu</div>
+      <div class="text">
+        <p><span class="statement-lineno">Une seule ligne</span> contenant une ou plusieurs commandes séparées par un point-virgule (<const>;</const>) (ou <action>WAIT</action>) :</p>
+        <ul>
+          <!-- BEGIN level1 -->
+          <li><action>SUMMON pentagramId TYPE</action> où <var>TYPE</var> vaut <const>HOUND</const> ou <const>GUARD</const>.</li>
+          <!-- END -->
+          <!-- BEGIN level2 level3 -->
+          <li><action>SUMMON pentagramId TYPE</action> où <var>TYPE</var> vaut <const>HOUND</const>, <const>GUARD</const> ou <const>WRAITH</const>.</li>
+          <!-- END -->
+          <li><action>ACTIVATE minionId targetX targetY</action></li>
+        </ul>
+        <p>Exemple : <action>ACTIVATE 0 9 5 ; SUMMON 0 GUARD</action></p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Contraintes</div>
+      <div class="text">
+        <var>width</var> = <const>11</const>, <var>height</var> = <const>11</const><br>
+        <var>pentagramCount</var> = <const>5</const><br>
+        <const>0</const> &le; <var>minionCount</var> &le; <const>24</const><br>
+        Temps de réponse pour le premier tour &le; <const>1000</const> ms<br>
+        Temps de réponse par tour &le; <const>50</const> ms<br>
+        Nombre maximum de tours : <const>90</const>
+      </div>
+    </div>
+  </div>
+
+  <!-- CODE SOURCE -->
+  <div class="statement-section statement-examples">
+    <h1><span class="icon icon-example">&nbsp;</span><span>Code Source</span></h1>
+    <div class="statement-examples-text">
+      Le code source complet de l'arbitre (Referee), du viewer PixiJS Dual-Mode et des bots de référence est disponible sur GitHub :
+      <a href="https://github.com/codingame-team/codingame-overlords-labyrinth" target="_blank" rel="noopener noreferrer">https://github.com/codingame-team/codingame-overlords-labyrinth</a>
+    </div>
+  </div>
+</div>
