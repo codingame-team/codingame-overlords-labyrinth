@@ -30,45 +30,32 @@ class Player {
 
             List<String> cmds = new ArrayList<>();
 
-            // 1. Activate existing minions first to clear home pentagram & advance!
+            // 1. Activate existing minions first to clear pentagrams & advance
             for (int i = 0; i < myMinions.size(); i++) {
                 if (gems < 1) break;
                 String[] m = myMinions.get(i);
                 int tx = oppSanctumX, ty = oppSanctumY;
-                if (leagueLevel >= 2 && i == 0) {
+                if (i == 0) {
                     for (int[] p : pentagrams) {
-                        if (p[3] != 0) {
-                            tx = p[1];
-                            ty = p[2];
-                            break;
-                        }
+                        if (p[3] != 0) { tx = p[1]; ty = p[2]; break; }
                     }
                 }
                 cmds.add("ACTIVATE " + m[0] + " " + tx + " " + ty);
                 gems -= 1;
             }
 
-            // 2. Summon on closest-to-enemy controlled pentagram
+            // 3. Summon WRAITH / GUARD / HOUND on closest-to-enemy controlled pentagram
             pentagrams.sort(Comparator.comparingInt(p -> Math.abs(p[1] - oppSanctumX) + Math.abs(p[2] - oppSanctumY)));
             for (int[] p : pentagrams) {
                 if (p[3] != 0) continue;
-                if (leagueLevel >= 3 && gems >= 4) {
+                if (gems >= 4) {
                     cmds.add("SUMMON " + p[0] + " WRAITH");
                     gems -= 4;
-                } else if (leagueLevel >= 2 && gems >= 3) {
+                } else if (gems >= 3) {
                     cmds.add("SUMMON " + p[0] + " GUARD");
                     gems -= 3;
                 } else if (gems >= 2) {
                     cmds.add("SUMMON " + p[0] + " HOUND");
-                    gems -= 2;
-                }
-            }
-
-            // 3. Frenzy double-activation in League 3
-            if (leagueLevel >= 3) {
-                for (String[] m : myMinions) {
-                    if (gems < 2) break;
-                    cmds.add("ACTIVATE " + m[0] + " " + oppSanctumX + " " + oppSanctumY);
                     gems -= 2;
                 }
             }

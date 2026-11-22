@@ -29,17 +29,21 @@ class Player {
             }
 
             List<String> cmds = new ArrayList<>();
+            for (String[] m : myMinions) {
+                if (gems < 1) break;
+                cmds.add("ACTIVATE " + m[0] + " " + (width / 2) + " " + (height / 2));
+                gems -= 1;
+            }
             for (int[] p : pentagrams) {
                 if (p[3] == 0 && gems >= 3) {
                     cmds.add("SUMMON " + p[0] + " GUARD");
                     gems -= 3;
                     break;
+                } else if (p[3] == 0 && gems >= 2) {
+                    cmds.add("SUMMON " + p[0] + " HOUND");
+                    gems -= 2;
+                    break;
                 }
-            }
-            for (String[] m : myMinions) {
-                if (gems < 1) break;
-                cmds.add("ACTIVATE " + m[0] + " " + (width / 2) + " " + (height / 2));
-                gems -= 1;
             }
             System.out.println(cmds.isEmpty() ? "WAIT" : String.join(" ; ", cmds));
         }
