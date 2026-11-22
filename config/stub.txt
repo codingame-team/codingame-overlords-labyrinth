@@ -23,7 +23,7 @@ oppSanctumY: Y coordinate of opponent Sanctum
 gems: Energy Gems available to spend this turn
 mySanctumHp: Remaining HP of your Sanctum
 oppSanctumHp: Remaining HP of opponent Sanctum
-row: One row of the labyrinth ('.'=floor, '#'=wall)
+row: One row of the thin-wall labyrinth as uppercase hex digits (0-F: 1=North, 2=East, 4=South, 8=West)
 pentagramCount: Number of Summoning Pentagrams
 pentagramId: Unique ID of the Pentagram
 px: X coordinate of the Pentagram
