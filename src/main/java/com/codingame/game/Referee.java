@@ -34,6 +34,10 @@ public class Referee extends AbstractReferee {
 
     private static final int[] DX = {0, 1, 0, -1};
     private static final int[] DY = {-1, 0, 1, 0};
+    private static final int WALL_N = 1;
+    private static final int WALL_E = 2;
+    private static final int WALL_S = 4;
+    private static final int WALL_W = 8;
 
     public enum MinionType {
         HOUND(2, 12, 6, 1, "minion_hound.png", "H"),
@@ -90,7 +94,7 @@ public class Referee extends AbstractReferee {
     @Inject private EndScreenModule endScreenModule;
     @Inject private ToggleModule toggleModule;
 
-    private final char[][] grid = new char[HEIGHT][WIDTH];
+    private final int[][] wallMask = new int[HEIGHT][WIDTH]; // Bitmask: N=1, E=2, S=4, W=8
     private final List<Pentagram> pentagrams = new ArrayList<>();
     private final List<MinionSlot> minionPool = new ArrayList<>();
     private Text turnText;
@@ -136,25 +140,46 @@ public class Referee extends AbstractReferee {
         }
     }
 
+    private void setThinWall(int x, int y, int dir) {
+        wallMask[y][x] |= (1 << dir);
+        int nx = x + DX[dir], ny = y + DY[dir];
+        if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT) {
+            wallMask[ny][nx] |= (1 << ((dir + 2) % 4));
+        }
+    }
+
     private void generateLabyrinth(Random rng) {
         int mid = WIDTH / 2;
-        for (int attempt = 0; attempt < 40; attempt++) {
+        for (int attempt = 0; attempt < 50; attempt++) {
             for (int y = 0; y < HEIGHT; y++) {
-                for (int x = 0; x < WIDTH; x++) grid[y][x] = '.';
+                for (int x = 0; x < WIDTH; x++) wallMask[y][x] = 0;
             }
+            // Perimeter outer walls
+            for (int x = 0; x < WIDTH; x++) {
+                wallMask[0][x] |= 1;             // N
+                wallMask[HEIGHT - 1][x] |= 4;    // S
+            }
+            for (int y = 0; y < HEIGHT; y++) {
+                wallMask[y][0] |= 8;             // W
+                wallMask[y][WIDTH - 1] |= 2;     // E
+            }
+
+            // Symmetric thin directional walls (E=1, S=2) across the 11x11 labyrinth
             for (int y = 0; y < HEIGHT; y++) {
                 for (int x = 0; x <= mid; x++) {
                     if (x == mid && y > HEIGHT / 2) continue;
-                    if (rng.nextDouble() < 0.22) {
-                        grid[y][x] = '#';
-                        grid[HEIGHT - 1 - y][WIDTH - 1 - x] = '#';
+                    // Keep direct exit from Sanctum spawns (1,5)->(2,5) and (9,5)->(8,5) open
+                    if ((x == 1 && y == 5) || (x == 2 && y == 5)) continue;
+                    if (x < WIDTH - 1 && rng.nextDouble() < 0.24) {
+                        setThinWall(x, y, 1); // East wall
+                        setThinWall(WIDTH - 1 - x, HEIGHT - 1 - y, 3); // Symmetric West wall
+                    }
+                    if (y < HEIGHT - 1 && rng.nextDouble() < 0.24) {
+                        setThinWall(x, y, 2); // South wall
+                        setThinWall(WIDTH - 1 - x, HEIGHT - 1 - y, 0); // Symmetric North wall
                     }
                 }
             }
-            // Keep Sanctums and initial guard spawns open
-            grid[5][1] = '.'; grid[5][2] = '.';
-            grid[5][WIDTH - 2] = '.'; grid[5][WIDTH - 3] = '.';
-            grid[mid][mid] = '.';
 
             int sideX = 3 + rng.nextInt(3); // 3..5
             int sideY = 1 + rng.nextInt(3); // 1..3
@@ -173,7 +198,6 @@ public class Referee extends AbstractReferee {
                 p.x = pCoords[i][0];
                 p.y = pCoords[i][1];
                 p.owner = pCoords[i][2];
-                grid[p.y][p.x] = '.';
                 pentagrams.add(p);
             }
 
@@ -181,9 +205,11 @@ public class Referee extends AbstractReferee {
                 return;
             }
         }
-        for (int i = 1; i < WIDTH - 1; i++) {
-            grid[mid][i] = '.';
-            grid[i][mid] = '.';
+        // Fallback: clear internal thin walls while preserving outer border
+        for (int y = 0; y < HEIGHT; y++) {
+            for (int x = 0; x < WIDTH; x++) {
+                wallMask[y][x] = (y == 0 ? 1 : 0) | (x == WIDTH - 1 ? 2 : 0) | (y == HEIGHT - 1 ? 4 : 0) | (x == 0 ? 8 : 0);
+            }
         }
     }
 
@@ -192,16 +218,21 @@ public class Referee extends AbstractReferee {
         Queue<int[]> q = new ArrayDeque<>();
         vis[5][1] = true;
         q.add(new int[]{1, 5});
+        int visitedCount = 1;
         while (!q.isEmpty()) {
             int[] c = q.poll();
+            int cx = c[0], cy = c[1];
             for (int d = 0; d < 4; d++) {
-                int nx = c[0] + DX[d], ny = c[1] + DY[d];
-                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && grid[ny][nx] == '.' && !vis[ny][nx]) {
+                if ((wallMask[cy][cx] & (1 << d)) != 0) continue; // Blocked by thin directional wall!
+                int nx = cx + DX[d], ny = cy + DY[d];
+                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && !vis[ny][nx]) {
                     vis[ny][nx] = true;
+                    visitedCount++;
                     q.add(new int[]{nx, ny});
                 }
             }
         }
+        if (visitedCount < WIDTH * HEIGHT) return false;
         for (Pentagram p : pentagrams) {
             if (!vis[p.y][p.x]) return false;
         }
@@ -300,33 +331,63 @@ public class Referee extends AbstractReferee {
             p.setStatusText(statusTxt);
         }
 
-        // Tiles (Dual-Mode)
+        // Tiles & Directional Thin Walls (Dual-Mode)
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 int cx = cellX(x), cy = cellY(y);
-                boolean isWall = grid[y][x] == '#';
-
-                String img = isWall ? "pillar.png" : (((x + y) % 2 == 0) ? "floor1.png" : "floor2.png");
+                String img = ((x + y) % 2 == 0) ? "floor1.png" : "floor2.png";
                 Sprite ts = graphicEntityModule.createSprite()
                     .setImage(img)
                     .setX(cx)
                     .setY(cy)
                     .setAnchor(0.5)
-                    .setBaseWidth(CELL_SIZE - 2)
-                    .setBaseHeight(CELL_SIZE - 2)
+                    .setBaseWidth(CELL_SIZE)
+                    .setBaseHeight(CELL_SIZE)
                     .setZIndex(1);
                 toggleModule.displayOnToggleState(ts, "renderMode", true);
 
                 Rectangle dt = graphicEntityModule.createRectangle()
-                    .setX(cx - CELL_SIZE / 2 + 2)
-                    .setY(cy - CELL_SIZE / 2 + 2)
-                    .setWidth(CELL_SIZE - 4)
-                    .setHeight(CELL_SIZE - 4)
-                    .setFillColor(isWall ? 0x3b4252 : 0x151824)
-                    .setLineWidth(2)
-                    .setLineColor(isWall ? 0x81a1c1 : 0x2a2e3d)
+                    .setX(cx - CELL_SIZE / 2 + 1)
+                    .setY(cy - CELL_SIZE / 2 + 1)
+                    .setWidth(CELL_SIZE - 2)
+                    .setHeight(CELL_SIZE - 2)
+                    .setFillColor(0x151824)
+                    .setLineWidth(1)
+                    .setLineColor(0x232738)
                     .setZIndex(1);
                 toggleModule.displayOnToggleState(dt, "renderMode", false);
+            }
+        }
+
+        // Draw directional thin-wall partitions on cell edges (N=1, E=2, S=4, W=8)
+        int wallThick = 10;
+        int dbgThick = 6;
+        for (int y = 0; y < HEIGHT; y++) {
+            for (int x = 0; x < WIDTH; x++) {
+                int mask = wallMask[y][x];
+                int left = ORIGIN_X + x * CELL_SIZE;
+                int top = ORIGIN_Y + y * CELL_SIZE;
+
+                // Horizontal thin walls: North (outer top edge) and South
+                if (y == 0 && (mask & WALL_N) != 0) {
+                    drawThinWallBar(left - wallThick / 2, top - wallThick / 2, CELL_SIZE + wallThick, wallThick,
+                                    left - dbgThick / 2, top - dbgThick / 2, CELL_SIZE + dbgThick, dbgThick);
+                }
+                if ((mask & WALL_S) != 0) {
+                    int sy = top + CELL_SIZE;
+                    drawThinWallBar(left - wallThick / 2, sy - wallThick / 2, CELL_SIZE + wallThick, wallThick,
+                                    left - dbgThick / 2, sy - dbgThick / 2, CELL_SIZE + dbgThick, dbgThick);
+                }
+                // Vertical thin walls: West (outer left edge) and East
+                if (x == 0 && (mask & WALL_W) != 0) {
+                    drawThinWallBar(left - wallThick / 2, top - wallThick / 2, wallThick, CELL_SIZE + wallThick,
+                                    left - dbgThick / 2, top - dbgThick / 2, dbgThick, CELL_SIZE + dbgThick);
+                }
+                if ((mask & WALL_E) != 0) {
+                    int ex = left + CELL_SIZE;
+                    drawThinWallBar(ex - wallThick / 2, top - wallThick / 2, wallThick, CELL_SIZE + wallThick,
+                                    ex - dbgThick / 2, top - dbgThick / 2, dbgThick, CELL_SIZE + dbgThick);
+                }
             }
         }
 
@@ -404,6 +465,30 @@ public class Referee extends AbstractReferee {
                 .setZIndex(10);
             minionPool.add(slot);
         }
+    }
+
+    private void drawThinWallBar(int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh) {
+        Rectangle spWall = graphicEntityModule.createRectangle()
+            .setX(sx)
+            .setY(sy)
+            .setWidth(sw)
+            .setHeight(sh)
+            .setFillColor(0xb8a38a)
+            .setLineWidth(2)
+            .setLineColor(0x2b211a)
+            .setZIndex(6);
+        toggleModule.displayOnToggleState(spWall, "renderMode", true);
+
+        Rectangle dbgWall = graphicEntityModule.createRectangle()
+            .setX(dx)
+            .setY(dy)
+            .setWidth(dw)
+            .setHeight(dh)
+            .setFillColor(0x63b3ed)
+            .setLineWidth(1)
+            .setLineColor(0x1a365d)
+            .setZIndex(6);
+        toggleModule.displayOnToggleState(dbgWall, "renderMode", false);
     }
 
     private MinionSlot getMinionAt(int x, int y) {
@@ -493,7 +578,11 @@ public class Referee extends AbstractReferee {
         player.sendInputLine(String.format("%d %d %d", player.getGems(), player.getSanctumHp(), opp.getSanctumHp()));
 
         for (int y = 0; y < HEIGHT; y++) {
-            player.sendInputLine(new String(grid[y]));
+            StringBuilder row = new StringBuilder(WIDTH);
+            for (int x = 0; x < WIDTH; x++) {
+                row.append(Integer.toHexString(wallMask[y][x]).toUpperCase());
+            }
+            player.sendInputLine(row.toString());
         }
 
         player.sendInputLine(String.valueOf(pentagrams.size()));
@@ -536,8 +625,9 @@ public class Referee extends AbstractReferee {
             int cx = cur[0], cy = cur[1];
             if (cx == tx && cy == ty) return first[cy][cx];
             for (int d = 0; d < 4; d++) {
+                if ((wallMask[cy][cx] & (1 << d)) != 0) continue;
                 int nx = cx + DX[d], ny = cy + DY[d];
-                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && grid[ny][nx] == '.' && dist[ny][nx] == -1) {
+                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && dist[ny][nx] == -1) {
                     dist[ny][nx] = dist[cy][cx] + 1;
                     first[ny][nx][0] = (cx == sx && cy == sy) ? nx : first[cy][cx][0];
                     first[ny][nx][1] = (cx == sx && cy == sy) ? ny : first[cy][cx][1];

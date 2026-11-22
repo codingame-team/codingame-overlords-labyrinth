@@ -14,6 +14,10 @@ public class Main {
             runBatchSimulation();
             return;
         }
+        if (args.length > 1 && "--export-replays".equals(args[0])) {
+            exportReplays(args[1]);
+            return;
+        }
         if (!ensureSystemClasspath(args)) {
             return;
         }
@@ -80,6 +84,38 @@ public class Main {
             }
             System.out.printf("==> League %d Summary: NerdnaOverlordAI Wins=%d, TreborBoss Wins=%d, Draws=%d%n%n",
                 league, p0Wins, p1Wins, draws);
+        }
+    }
+
+    private static void exportReplays(String outDir) {
+        try {
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            java.lang.reflect.Field f = com.codingame.gameengine.module.entities.GraphicEntityModule.class
+                .getDeclaredField("ENTITY_COUNT");
+            f.setAccessible(true);
+
+            long[] seeds = {1001L, 2001L, 3001L};
+            int[] leagues = {1, 2, 3};
+            for (int i = 0; i < 3; i++) {
+                f.setInt(null, 0);
+                MultiplayerGameRunner runner = new MultiplayerGameRunner();
+                runner.setLeagueLevel(leagues[i]);
+                runner.setSeed(seeds[i]);
+                runner.addAgent(Agent1.class, "NerdnaOverlordAI");
+                runner.addAgent(Agent2.class, "TreborBoss");
+                GameResult result = runner.simulate();
+
+                String json = gson.toJson(result);
+                java.nio.file.Path outPath = java.nio.file.Paths.get(outDir, "replay" + (i + 1) + ".json");
+                java.nio.file.Files.writeString(outPath, json);
+                if (i == 2) {
+                    java.nio.file.Files.writeString(java.nio.file.Paths.get(outDir, "game.json"), json);
+                }
+                System.out.println("Exported " + outPath + " (" + result.views.size() + " frames)");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }
